@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Agentic Operations for Order-to-Cash project report" />
+  <title>O2C Agents — Project Report</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#home">
+      <span class="brand-mark">O2C</span>
+      <span>
+        <strong>O2C Agents</strong>
+        <small>COMP0016 Project Report</small>
+      </span>
+    </a>
+
+    <button id="sidebarToggle" class="mobile-nav-btn" aria-label="Open section navigation" aria-expanded="false">
+      Sections
+    </button>
+  </header>
+
+  <aside class="sidebar" id="sidebar" aria-label="Report sections">
+    <p class="sidebar-label">Report sections</p>
+    <nav>
+      <a class="side-link active" href="#home"><span>01</span>Home</a>
+      <a class="side-link" href="#requirements"><span>02</span>Requirements</a>
+      <a class="side-link" href="#research"><span>03</span>Research</a>
+      <a class="side-link" href="#ui"><span>04</span>UI Design</a>
+      <a class="side-link" href="#design"><span>05</span>Design & Implementation</a>
+      <a class="side-link" href="#testing"><span>06</span>Testing</a>
+      <a class="side-link" href="#evaluation"><span>07</span>Evaluation</a>
+      <a class="side-link" href="#appendices"><span>08</span>Appendices</a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- =========================================================
+         01 HOME / INTRODUCTION
+    ========================================================== -->
+    <section id="home" class="report-section hero-section">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">Agentic Operations for Order-to-Cash</p>
+          <h1>AI-assisted decision making for complex O2C workflows.</h1>
+          <p class="lead">
+            A hybrid Order-to-Cash system that combines deterministic ERP-style checks with
+            specialised AI agents to reduce manual investigation while preserving human oversight.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#design" class="btn btn-dark">View system design</a>
+            <a href="#requirements" class="btn btn-light">See requirements</a>
+          </div>
+
+          <div class="stats-row">
+            <div><strong>3</strong><span>Implemented agents</span></div>
+            <div><strong>5</strong><span>O2C lifecycle stages</span></div>
+            <div><strong>HITL</strong><span>Human review support</span></div>
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="window-bar"><span></span><span></span><span></span></div>
+          <div class="flow-body">
+            <div class="flow-node">O2C Business Data</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-node">Deterministic Business Checks</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-node flow-accent">AI Reasoning When Needed</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-split">
+              <div class="flow-node">Automated Outcome</div>
+              <div class="flow-node">Human Review</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-intro">
+        <p class="eyebrow">Introduction</p>
+        <h2>Project overview</h2>
+      </div>
+
+      <div class="prose-block">
+        <p>
+          Order-to-Cash (O2C) is the end-to-end business process that begins when a customer
+          places an order and finishes when payment is received and revenue is recorded.
+          Although the process appears straightforward, many stages rely on rigid enterprise
+          software and manual human intervention when something does not exactly match the
+          expected format.
+        </p>
+        <p>
+          Traditional Enterprise Resource Planning (ERP) systems are effective at storing
+          structured business records and applying predefined rules, but they often struggle
+          with ambiguity and unstructured information. Small inconsistencies, such as minor
+          discrepancies on an invoice or purchase order, missing references in a bank transfer,
+          or unusual customer communications, can interrupt an automated workflow and require
+          a person to investigate the case manually, delaying the overall process.
+        </p>
+      </div>
+
+      <div class="subsection">
+        <p class="eyebrow">Project aim</p>
+        <h3>Reducing the manual decision-making burden</h3>
+        <div class="prose-block">
+          <p>
+            The aim of this project is to investigate whether a network of AI agents can take
+            over some of the complex decision-making traditionally performed by enterprise
+            software and human workers within the O2C process.
+          </p>
+          <p>
+            Rather than relying entirely on rigid business logic, the proposed architecture
+            separates data storage from decision-making. The database stores O2C records such
+            as customers, purchase orders, goods received notices, invoices and payments,
+            while specialised agents analyse this information and decide how the workflow
+            should continue.
+          </p>
+          <p>
+            The intention is not to remove human involvement completely. Instead, the system
+            aims to reduce repetitive investigation and allow human users to focus on cases
+            where judgement, accountability or additional evidence is required.
+          </p>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="eyebrow">The Order-to-Cash process</p>
+        <h3>Five stages from order to recorded revenue</h3>
+
+        <div class="lifecycle-strip">
+          <div><span>1</span><strong>Purchase Order</strong><small>Receive customer order</small></div>
+          <div><span>2</span><strong>Fulfilment</strong><small>Deliver goods / receive confirmation</small></div>
+          <div><span>3</span><strong>Invoice</strong><small>Generate and validate invoice</small></div>
+          <div><span>4</span><strong>Payment</strong><small>Collect and match remittance</small></div>
+          <div><span>5</span><strong>Revenue</strong><small>Record completed transaction</small></div>
+        </div>
+
+        <div class="prose-block">
+          <p>
+            At each stage, exceptions may prevent the process from continuing automatically.
+            Examples include inconsistent documents, missing information, overdue payments,
+            unclear bank remittances and financial discrepancies.
+          </p>
+          <p>
+            AI agents provide an opportunity to interpret these cases using both structured
+            transaction data and contextual evidence that would normally require human
+            judgement, saving time and reducing manual effort.
+          </p>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="eyebrow">Our approach</p>
+        <h3>A hybrid architecture</h3>
+        <div class="prose-block">
+          <p>
+            The current implementation combines conventional ERP-style business logic with AI
+            reasoning. Clear cases are handled using deterministic rules. For example, invoice
+            quantities can be compared directly against purchase orders and goods received
+            records, while payments can first be matched using exact invoice references and
+            amounts.
+          </p>
+          <p>
+            If these checks cannot confidently resolve the case, the relevant information is
+            passed to an AI agent. The agent analyses the available evidence and returns a
+            structured recommendation including a decision, explanation and confidence score.
+            Where the agent cannot safely resolve the case, the result is escalated for human
+            review.
+          </p>
+          <p>
+            This keeps straightforward financial checks predictable while allowing AI to add
+            value in cases that depend on context or semantic interpretation.
+          </p>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="eyebrow">Implemented agents</p>
+        <h3>Current agent scope</h3>
+
+        <div class="three-col agent-cards">
+          <article class="dark-card">
+            <span class="mini-index">01</span>
+            <h3>Invoice QA Agent</h3>
+            <p>
+              Validates invoices against purchase orders and goods received records. Clean
+              matches are approved deterministically, supported discrepancies can be analysed
+              by AI, and unresolved cases are escalated for human review.
+            </p>
+          </article>
+
+          <article class="dark-card">
+            <span class="mini-index">02</span>
+            <h3>Cash Application Agent</h3>
+            <p>
+              Matches incoming bank payments to outstanding invoices. Exact amount and
+              reference matches are handled automatically, while ambiguous remittances are
+              analysed by AI or escalated.
+            </p>
+          </article>
+
+          <article class="dark-card">
+            <span class="mini-index">03</span>
+            <h3>Dunning Agent</h3>
+            <p>
+              Supports collection of overdue payments by considering invoice status,
+              previous reminders, payment promises and risk before recommending the next
+              action.
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="eyebrow">Key features</p>
+        <h3>Design principles of the current implementation</h3>
+
+        <div class="feature-grid">
+          <article class="card">
+            <h3>Context-aware decisions</h3>
+            <p>Agents can consider contextual evidence as well as structured O2C records.</p>
+          </article>
+          <article class="card">
+            <h3>Deterministic-first processing</h3>
+            <p>Straightforward cases are resolved without calling an AI model unnecessarily.</p>
+          </article>
+          <article class="card">
+            <h3>Human-in-the-loop</h3>
+            <p>Cases that remain uncertain or require accountability can be escalated.</p>
+          </article>
+          <article class="card">
+            <h3>Structured AI decisions</h3>
+            <p>Outputs can include a decision, reason, confidence, risk and recommended action.</p>
+          </article>
+          <article class="card">
+            <h3>Traceable workflow</h3>
+            <p>Agent decisions and escalations are stored so outcomes can later be reviewed.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>Project objective</strong>
+        <p>
+          The overall objective is to explore whether agentic AI can make the O2C process more
+          flexible than a purely rule-driven system while remaining controlled, traceable and
+          suitable for human oversight.
+        </p>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         02 REQUIREMENTS + USE CASE
+    ========================================================== -->
+    <section id="requirements" class="report-section">
+      <div class="section-header">
+        <div class="section-number">02</div>
+        <div>
+          <p class="eyebrow">Requirements + Use Cases</p>
+          <h2>System requirements and expected user interactions</h2>
+          <p class="section-summary">
+            Requirements were prioritised using the MoSCoW method so that the core O2C
+            automation and human-review functionality remained the main focus of the implementation.
+          </p>
+        </div>
+      </div>
+
+      <div class="subsection first-subsection">
+        <p class="eyebrow">MoSCoW priorities</p>
+        <h3>Functional requirements</h3>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Priority</th>
+                <th>Requirement</th>
+                <th>Related area</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>FR1</td><td><span class="priority must">Must</span></td><td>Validate invoices against purchase order and goods received information.</td><td>Invoice QA</td></tr>
+              <tr><td>FR2</td><td><span class="priority must">Must</span></td><td>Detect invoice discrepancies and analyse unresolved exceptions.</td><td>Invoice QA</td></tr>
+              <tr><td>FR3</td><td><span class="priority must">Must</span></td><td>Match incoming bank remittances to outstanding invoices.</td><td>Cash Application</td></tr>
+              <tr><td>FR4</td><td><span class="priority must">Must</span></td><td>Identify overdue invoices and recommend an appropriate dunning action.</td><td>Dunning</td></tr>
+              <tr><td>FR5</td><td><span class="priority must">Must</span></td><td>Escalate unresolved or unsuitable cases for human review.</td><td>All agents</td></tr>
+              <tr><td>FR6</td><td><span class="priority must">Must</span></td><td>Store agent decisions, reasoning, confidence and status for auditability.</td><td>Audit trail</td></tr>
+              <tr><td>FR7</td><td><span class="priority should">Should</span></td><td>Display review queues and reconstructed O2C cases in a user interface.</td><td>Frontend</td></tr>
+              <tr><td>FR8</td><td><span class="priority should">Should</span></td><td>Store contextual evidence that can be used by agents during analysis.</td><td>Agent support</td></tr>
+              <tr><td>FR9</td><td><span class="priority could">Could</span></td><td>Generate draft customer communications for suitable collection actions.</td><td>Dunning</td></tr>
+              <tr><td>FR10</td><td><span class="priority wont">Won't</span></td><td>Fully automate all O2C stages without human oversight in the current prototype.</td><td>Scope boundary</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="spacing-top">Non-functional requirements</h3>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Priority</th>
+                <th>Requirement</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>NFR1</td><td><span class="priority must">Must</span></td><td>Agent decisions should be explainable and traceable.</td></tr>
+              <tr><td>NFR2</td><td><span class="priority must">Must</span></td><td>The system should avoid silently accepting malformed or unsupported AI outputs.</td></tr>
+              <tr><td>NFR3</td><td><span class="priority must">Must</span></td><td>The architecture should keep individual agents modular and maintainable.</td></tr>
+              <tr><td>NFR4</td><td><span class="priority should">Should</span></td><td>The interface should make escalated cases easy to understand and review.</td></tr>
+              <tr><td>NFR5</td><td><span class="priority should">Should</span></td><td>Straightforward deterministic cases should avoid unnecessary LLM calls.</td></tr>
+              <tr><td>NFR6</td><td><span class="priority could">Could</span></td><td>The application could support role-based access and separation of duties.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="eyebrow">Use case diagram</p>
+        <h3>Main user-facing workflows</h3>
+        <div class="prose-block">
+          <p>
+            The main user is a finance or O2C staff member who monitors automated workflows
+            and reviews cases that the agents cannot safely resolve. Core use cases include
+            validating invoices, matching customer payments, managing overdue invoices,
+            reviewing escalated cases and viewing the audit trail.
+          </p>
+        </div>
+
+        <figure class="diagram-card use-case-card">
+          <img
+            src="images/USECASEDIAGRAM.png"
+            alt="Use case diagram for the Agentic Order-to-Cash system"
+            class="diagram-image"
+          >
+          <figcaption>
+            <strong>Figure 1. O2C system use case diagram.</strong>
+            <span>
+              The diagram shows the main finance-user workflows and the conditional
+              AI analysis and human-review paths.
+            </span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         03 RESEARCH + DESIGN CHOICES
+    ========================================================== -->
+    <section id="research" class="report-section">
+      <div class="section-header">
+        <div class="section-number">03</div>
+        <div>
+          <p class="eyebrow">Research + Design Choices</p>
+          <h2>Why use agentic AI in Order-to-Cash?</h2>
+          <p class="section-summary">
+            Research focused on O2C bottlenecks, the limitations of rigid business rules,
+            and the role AI can play in interpreting contextual evidence.
+          </p>
+        </div>
+      </div>
+
+      <div class="subsection first-subsection">
+        <p class="eyebrow">O2C bottlenecks</p>
+        <h3>Where manual effort appears</h3>
+
+        <div class="five-stage-grid">
+          <article class="card">
+            <span class="stage-num">1</span>
+            <h3>Purchase order intake</h3>
+            <p>Orders may arrive in inconsistent formats, requiring manual interpretation or data entry.</p>
+          </article>
+          <article class="card">
+            <span class="stage-num">2</span>
+            <h3>Fulfilment</h3>
+            <p>Delivery records and order status may need reconciliation before later stages can continue.</p>
+          </article>
+          <article class="card">
+            <span class="stage-num">3</span>
+            <h3>Invoice validation</h3>
+            <p>Document discrepancies can break exact matching and require investigation.</p>
+          </article>
+          <article class="card">
+            <span class="stage-num">4</span>
+            <h3>Payment collection</h3>
+            <p>Late payments, disputes and unclear remittance text create manual workload.</p>
+          </article>
+          <article class="card">
+            <span class="stage-num">5</span>
+            <h3>Revenue recording</h3>
+            <p>Transactions must be reconciled and recorded accurately before the O2C cycle closes.</p>
+          </article>
+        </div>
+      </div>
+      <div class="subsection">
+        <p class="eyebrow">Agent selection</p>
+        <h3>Why these three agents?</h3>
+
+        <div class="prose-block">
+          <p>
+            Invoice QA, Cash Application and Dunning were prioritised because they represent
+            major points of manual investigation within the O2C process. Invoice QA involves
+            resolving document discrepancies, Cash Application deals with ambiguous payment
+            matching, and Dunning requires judgement about overdue accounts and collection actions.
+          </p>
+
+          <p>
+            Together, they cover three different human bottlenecks: validation, reconciliation
+            and collections. This made them suitable areas for testing how AI could reduce manual
+            effort while still using deterministic checks and human review where needed.
+          </p>
+        </div>
+      </div>
+      <div class="subsection">
+        <p class="eyebrow">Design choice</p>
+        <h3>Deterministic logic first, AI second</h3>
+        <div class="two-col">
+          <div class="card">
+            <h3>Why deterministic checks remain important</h3>
+            <ul class="clean-list">
+              <li>Reduces unnecessary LLM calls.</li>
+              <li>Keeps straightforward financial decisions predictable.</li>
+              <li>Reduces exposure to hallucination or inconsistent reasoning.</li>
+              <li>Makes clear business rules easier to unit test.</li>
+              <li>Improves efficiency when exact matching is already sufficient.</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Where AI adds value</h3>
+            <ul class="clean-list">
+              <li>Interpreting ambiguous or incomplete evidence.</li>
+              <li>Understanding contextual notes or remittance text.</li>
+              <li>Explaining why an exception may be justified.</li>
+              <li>Recommending the next action when exact rules are insufficient.</li>
+              <li>Reducing the amount of manual investigation required.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="eyebrow">Human-in-the-loop design</p>
+        <h3>AI supports the decision rather than removing accountability</h3>
+
+        <div class="decision-flow">
+          <div>Deterministic checks</div><span>→</span>
+          <div>AI analysis if required</div><span>→</span>
+          <div>Decision + reason + confidence / risk</div><span>→</span>
+          <div>Complete or send to human review</div>
+        </div>
+
+        <div class="prose-block">
+          <p>
+            The implemented agents return structured outcomes rather than unrestricted
+            natural-language responses. Where the result is explicitly marked for human
+            review, or where the available evidence does not support a safe automated
+            outcome, a review record can be created for a finance user.
+          </p>
+          <p>
+            Confidence and risk values are useful supporting signals, but they should not
+            be treated as proof that an AI decision is correct. Human review remains important
+            for cases with higher financial or compliance consequences.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         04 UI DESIGN
+    ========================================================== -->
+    <section id="ui" class="report-section">
+      <div class="section-header">
+        <div class="section-number">04</div>
+        <div>
+          <p class="eyebrow">UI Design</p>
+          <h2>Designing the O2C operations console</h2>
+          <p class="section-summary">
+            The interface is designed around one operational dashboard with dedicated views
+            for review queues, agent activity and complete case reconstruction.
+          </p>
+        </div>
+      </div>
+
+      <div class="subsection first-subsection">
+        <p class="eyebrow">Main navigation</p>
+        <h3>Five operational views</h3>
+
+        <div class="ui-tabs-grid">
+          <article class="card"><strong>Overview</strong><p>High-level view of O2C operations and outstanding work.</p></article>
+          <article class="card"><strong>Invoice QA</strong><p>Invoice exception reviews requiring attention.</p></article>
+          <article class="card"><strong>Cash Application</strong><p>Ambiguous or escalated payment matching cases.</p></article>
+          <article class="card"><strong>Dunning</strong><p>Collection cases and escalated overdue invoices.</p></article>
+          <article class="card"><strong>Case Overview</strong><p>Search and reconstruct an O2C case, including evidence and agent activity.</p></article>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="eyebrow">Wireframes and mock-ups</p>
+        <h3>From early review layout to final console</h3>
+
+        <div class="ui-design-gallery">
+          <figure class="image-card large-ui-card">
+            <div class="ui-image-wrapper">
+              <img
+                src="images/WIREFRAME.png"
+                alt="Initial human review dashboard wireframe"
+                class="ui-design-image"
+              >
+            </div>
+            <figcaption>
+              <span class="figure-stage">Stage 1</span>
+              <strong>Initial wireframe</strong>
+              <span>
+                The first design focused on the human-review workflow. Review queues
+                were displayed alongside an AI summary, recommended next step and
+                controls for accepting or rejecting the suggested action.
+              </span>
+            </figcaption>
+          </figure>
+
+          <figure class="image-card large-ui-card">
+            <div class="ui-image-wrapper">
+              <img
+                src="images/MOCKUP.png"
+                alt="High-fidelity O2C operations console mock-up"
+                class="ui-design-image"
+              >
+            </div>
+            <figcaption>
+              <span class="figure-stage">Stage 2</span>
+              <strong>High-fidelity mock-up</strong>
+              <span>
+                The mock-up refined the visual design and introduced the navigation,
+                case summaries and timeline structure used in the final interface.
+              </span>
+            </figcaption>
+          </figure>
+
+          <figure class="image-card large-ui-card">
+            <div class="ui-image-wrapper">
+              <img
+                src="images/FINALUISNAPSHOT.png"
+                alt="Final implemented O2C operations console"
+                class="ui-design-image"
+              >
+            </div>
+            <figcaption>
+              <span class="figure-stage">Stage 3</span>
+              <strong>Final implementation</strong>
+              <span>
+                The final interface combines case search, related O2C records,
+                evidence and agent activity so that users can reconstruct how a
+                decision was reached.
+              </span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="eyebrow">UI design goals</p>
+        <div class="three-col">
+          <article class="card"><h3>Clarity</h3><p>Show the reason for escalation without forcing users to inspect raw database records.</p></article>
+          <article class="card"><h3>Traceability</h3><p>Use a case timeline to show evidence, agent decisions and review events in sequence.</p></article>
+          <article class="card"><h3>Efficient review</h3><p>Keep the AI summary and recommended next step visible alongside the relevant case information.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         05 PROPOSED DESIGN + IMPLEMENTATION
+    ========================================================== -->
+    <section id="design" class="report-section">
+      <div class="section-header">
+        <div class="section-number">05</div>
+        <div>
+          <p class="eyebrow">Proposed Design + Implementation</p>
+          <h2>Technology stack and system architecture</h2>
+          <p class="section-summary">
+            The application separates data storage, deterministic business logic, AI-assisted
+            reasoning, backend APIs and the review interface.
+          </p>
+        </div>
+      </div>
+
+      <div class="tech-grid">
+        <div class="tech-chip"><span>Backend</span><strong>Python</strong></div>
+        <div class="tech-chip"><span>API</span><strong>FastAPI</strong></div>
+        <div class="tech-chip"><span>ORM</span><strong>SQLAlchemy</strong></div>
+        <div class="tech-chip"><span>Database</span><strong>SQLite</strong></div>
+        <div class="tech-chip"><span>AI</span><strong>Azure OpenAI</strong></div>
+        <div class="tech-chip"><span>Frontend</span><strong>Vue 3 + Vite</strong></div>
+      </div>
+
+<div class="subsection">
+  <p class="eyebrow">Application architecture</p>
+  <h3>High-level design</h3>
+
+  <div class="architecture-box">
+
+    <div class="arch-column">
+      <span class="arch-label">Data</span>
+      <div class="arch-node">SQLite Database</div>
+      <div class="arch-node">Case Evidence Records</div>
+    </div>
+
+    <div class="arch-arrow">↔</div>
+
+    <div class="arch-column">
+      <span class="arch-label">Backend / API</span>
+      <div class="arch-node">FastAPI</div>
+      <div class="arch-node">SQLAlchemy</div>
+    </div>
+
+    <div class="arch-arrow">↔</div>
+
+    <div class="arch-column">
+      <span class="arch-label">Decision Layer</span>
+      <div class="arch-node">Deterministic Checks</div>
+      <div class="arch-node accent-node">Invoice QA Agent</div>
+      <div class="arch-node accent-node">Cash Application Agent</div>
+      <div class="arch-node accent-node">Dunning Agent</div>
+    </div>
+
+    <div class="arch-arrow">↔</div>
+
+    <div class="arch-column">
+      <span class="arch-label">User Interface</span>
+      <div class="arch-node">Vue 3 + Vite</div>
+      <div class="arch-node">Review Queues</div>
+      <div class="arch-node">Case Overview</div>
+    </div>
+
+  </div>
+
+  <div class="prose-block">
+    <p>
+      Deterministic business checks are performed before AI is used. If a clear
+      and safe outcome can be determined, the workflow continues without an LLM
+      call. Otherwise, relevant case data and evidence are passed to the appropriate
+      specialist agent.
+    </p>
+
+    <p>
+      The resulting structured recommendation is then either executed automatically
+      or escalated for human review, depending on confidence, risk and available
+      evidence. Any resulting state changes are persisted through the backend and
+      reflected in the user interface.
+    </p>
+  </div>
+</div>
+
+      <div class="subsection">
+        <p class="eyebrow">Database design</p>
+        <h3>Transactional O2C data and agent support</h3>
+
+        <div class="design-grid">
+          <figure class="diagram-card erd-card">
+            <img
+              src="images/ERDFINAL.png"
+              alt="Entity relationship diagram for the Order-to-Cash database"
+              class="diagram-image"
+            >
+            <figcaption>
+              <strong>Figure 2. Database Entity Relationship Diagram.</strong>
+              <span>
+                Core transactional O2C records are shown alongside the supporting
+                agent action, evidence and human-review tables.
+              </span>
+            </figcaption>
+          </figure>
+
+          <div class="card text-card">
+            <p>
+              The database was designed to represent both the transactional O2C lifecycle
+              and the agentic decision-making layer. Core entities such as customers, purchase
+              orders, goods received notes, invoices and payments are connected using
+              conventional foreign-key relationships.
+            </p>
+            <p>
+              Separate tables for <code>CaseEvidence</code>, <code>AgentAction</code> and
+              <code>HumanReviewCase</code> support AI reasoning, auditability and human
+              escalation.
+            </p>
+            <p>
+              These tables use a generic <code>entity_type</code> and
+              <code>entity_id</code> pair so that the same evidence and review infrastructure
+              can be reused across invoices, payments and other O2C entities.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="eyebrow">Agent design</p>
+        <h3>How each implemented agent behaves</h3>
+
+        <div class="agent-flow-grid">
+          <article class="card">
+            <span class="card-label">Invoice QA</span>
+            <ol class="steps-list">
+              <li>Load invoice, PO, GRN and line-item data.</li>
+              <li>Run deterministic three-way checks.</li>
+              <li>Skip AI for a clean match.</li>
+              <li>Send unresolved exceptions and evidence to the AI agent.</li>
+              <li>Accept a justified outcome or create human review.</li>
+            </ol>
+          </article>
+
+          <article class="card">
+            <span class="card-label">Cash Application</span>
+            <ol class="steps-list">
+              <li>Load bank remittance and candidate invoices.</li>
+              <li>Attempt exact amount and reference matching.</li>
+              <li>Complete a unique deterministic match immediately.</li>
+              <li>Use AI when the remittance is ambiguous.</li>
+              <li>Escalate if a unique invoice still cannot be identified.</li>
+            </ol>
+          </article>
+
+          <article class="card">
+            <span class="card-label">Dunning</span>
+            <ol class="steps-list">
+              <li>Check whether the invoice actually requires collection action.</li>
+              <li>Load customer, invoice and contextual evidence.</li>
+              <li>Consider reminders, promises, age and risk.</li>
+              <li>Return a structured action such as wait or human review.</li>
+              <li>Store the decision for later inspection.</li>
+            </ol>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+        06 TESTING STRATEGY
+    ========================================================== -->
+    <section id="testing" class="report-section">
+      <div class="section-header">
+        <div class="section-number">06</div>
+        <div>
+          <p class="eyebrow">Testing Strategy</p>
+          <h2>Testing deterministic logic, agent workflows and system integration</h2>
+          <p class="section-summary">
+            The system was tested at multiple levels to verify both the traditional
+            O2C business logic and the new agent-assisted workflows. The automated
+            test suite currently contains 43 passing tests.
+          </p>
+        </div>
+      </div>
+
+      <!-- TESTING APPROACH -->
+      <div class="subsection first-subsection">
+        <p class="eyebrow">Testing approach</p>
+        <h3>Testing at multiple levels</h3>
+
+        <div class="prose-block">
+          <p>
+            The testing strategy was designed to separate deterministic business logic
+            from AI-dependent behaviour wherever possible. This is important because
+            functions such as quantity comparison, payment allocation and invoice status
+            updates should behave predictably and can therefore be tested directly.
+          </p>
+
+          <p>
+            Agent behaviour was tested using mocked AI responses rather than live model
+            calls. This makes the automated test suite repeatable, avoids consuming Azure
+            OpenAI credits, and ensures that failures represent problems in the application
+            logic rather than changes in model output or network availability.
+          </p>
+
+          <p>
+            Database tests use isolated in-memory SQLite databases, meaning that running
+            the test suite does not alter the main demonstration database used by the
+            application.
+          </p>
+        </div>
+
+        <div class="testing-levels">
+          <article class="card">
+            <span class="card-label">Level 1</span>
+            <h3>Unit and deterministic testing</h3>
+            <p>
+              Individual business rules and parsing functions are tested independently,
+              including invoice matching, payment matching, dunning checks and validation
+              of structured AI responses.
+            </p>
+          </article>
+
+          <article class="card">
+            <span class="card-label">Level 2</span>
+            <h3>Agent and controller testing</h3>
+            <p>
+              Agent workflows are tested with mocked AI outputs to verify that decisions
+              such as ACCEPT, MATCH, WAIT and HUMAN_REVIEW are routed correctly.
+            </p>
+          </article>
+
+          <article class="card">
+            <span class="card-label">Level 3</span>
+            <h3>API and persistence testing</h3>
+            <p>
+              FastAPI endpoints are tested using an isolated database to confirm that
+              human decisions, payment allocations, review outcomes and agent actions are
+              persisted correctly.
+            </p>
+          </article>
+
+          <article class="card">
+            <span class="card-label">Level 4</span>
+            <h3>Workflow testing</h3>
+            <p>
+              Complete O2C success, failure and dunning paths are tested to verify the
+              sequence of events across purchase orders, fulfilment, invoicing, payment
+              and revenue recording.
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <!-- INVOICE QA -->
+      <div class="subsection">
+        <p class="eyebrow">Invoice QA testing</p>
+        <h3>Three-way matching and exception handling</h3>
+
+        <div class="prose-block">
+          <p>
+            Invoice QA tests verify both the deterministic three-way matching logic and
+            the behaviour of the workflow when an exception requires AI analysis.
+            Particular attention was given to ensuring that clean cases do not call the
+            AI unnecessarily.
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Test scenario</th>
+                <th>Expected behaviour</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Clean PO, GRN and invoice match</td>
+                <td>Invoice is accepted and the AI path is bypassed.</td>
+              </tr>
+              <tr>
+                <td>Quantity discrepancy</td>
+                <td>The mismatch is detected before the case reaches AI analysis.</td>
+              </tr>
+              <tr>
+                <td>AI returns ACCEPT</td>
+                <td>The controller records successful Invoice QA completion.</td>
+              </tr>
+              <tr>
+                <td>AI returns HUMAN_REVIEW</td>
+                <td>The invoice is routed to the human-review workflow.</td>
+              </tr>
+              <tr>
+                <td>Human reviewer approves invoice</td>
+                <td>The review is resolved and the invoice QA status is updated to MATCH.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CASH APPLICATION -->
+      <div class="subsection">
+        <p class="eyebrow">Cash Application testing</p>
+        <h3>Payment matching and allocation safety</h3>
+
+        <div class="prose-block">
+          <p>
+            Cash Application testing covers exact payment matching, ambiguous remittances,
+            split payments and manual allocation. The tests also verify that payment
+            allocations cannot exceed either the payment amount or the remaining balance
+            of an invoice.
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Test scenario</th>
+                <th>Expected behaviour</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Exact invoice reference and payment amount</td>
+                <td>The payment is matched automatically without an AI call.</td>
+              </tr>
+              <tr>
+                <td>Unique split across two invoices</td>
+                <td>Two PaymentApplication records are created and both invoices are updated.</td>
+              </tr>
+              <tr>
+                <td>Ambiguous payment</td>
+                <td>The payment is escalated for human review.</td>
+              </tr>
+              <tr>
+                <td>Manual allocation does not equal payment total</td>
+                <td>The API rejects the allocation.</td>
+              </tr>
+              <tr>
+                <td>Allocation exceeds an invoice balance</td>
+                <td>The API rejects the over-allocation.</td>
+              </tr>
+              <tr>
+                <td>Valid manual allocation</td>
+                <td>The allocation is stored and the payment is marked MATCHED_MANUAL.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DUNNING -->
+      <div class="subsection">
+        <p class="eyebrow">Dunning testing</p>
+        <h3>Collections decisions and risk escalation</h3>
+
+        <div class="prose-block">
+          <p>
+            Dunning tests verify that simple invoice states are handled deterministically
+            before AI is used, and that risky AI recommendations cannot silently proceed.
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Test scenario</th>
+                <th>Expected behaviour</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Invoice is not yet due</td>
+                <td>No dunning action is required.</td>
+              </tr>
+              <tr>
+                <td>Invoice is disputed</td>
+                <td>The case is sent directly for human review.</td>
+              </tr>
+              <tr>
+                <td>Credible payment promise</td>
+                <td>The agent may return WAIT and the controller records the decision.</td>
+              </tr>
+              <tr>
+                <td>High-risk AI result</td>
+                <td>The workflow forces HUMAN_REVIEW even if the AI initially recommends a reminder.</td>
+              </tr>
+              <tr>
+                <td>Human reviewer selects WAIT</td>
+                <td>A DunningAction is persisted in the case history.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- API / UI DATA -->
+      <div class="subsection">
+        <p class="eyebrow">API and audit testing</p>
+        <h3>Testing the data shown by the Operations Console</h3>
+
+        <div class="prose-block">
+          <p>
+            The backend API was tested using FastAPI's test client. These tests verify
+            that the information displayed by the frontend reflects confirmed database
+            state rather than speculative relationships.
+          </p>
+        </div>
+
+        <div class="two-col">
+          <article class="card">
+            <h3>Human review API</h3>
+            <ul class="clean-list">
+              <li>Only open reviews are returned in the review queue.</li>
+              <li>Unknown review identifiers return a 404 response.</li>
+              <li>Resolution actions and notes are persisted.</li>
+              <li>Resolved reviews store a resolution timestamp.</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <h3>Case Overview and Agent Activity</h3>
+            <ul class="clean-list">
+              <li>Agent Action records are returned through the API.</li>
+              <li>Recent cases use the latest human-resolution timestamp.</li>
+              <li>Confirmed split-payment relationships appear in Case Overview.</li>
+              <li>Unprocessed payments do not incorrectly display candidate invoices as confirmed links.</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+
+      <!-- SEEDED LIVE CASES -->
+      <div class="subsection">
+        <p class="eyebrow">Demonstration-case testing</p>
+        <h3>Verifying the live-agent examples</h3>
+
+        <div class="prose-block">
+          <p>
+            The seeded demonstration data is also tested to ensure that records intended
+            for live agent demonstrations begin in an unprocessed state. This prevents
+            historical AgentAction or HumanReviewCase records from making a demonstration
+            appear to have already been processed.
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Record</th>
+                <th>Tested initial state</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>INV-LIVE-001</td>
+                <td>Invoice QA begins with PENDING status and no previous agent outcome.</td>
+              </tr>
+              <tr>
+                <td>PAY-LIVE-001</td>
+                <td>Payment begins UNPROCESSED with no allocations, agent actions or review cases.</td>
+              </tr>
+              <tr>
+                <td>INV-LIVE-002</td>
+                <td>No previous AgentAction or HumanReviewCase exists.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout">
+          <strong>Deterministic live-payment test</strong>
+          <p>
+            PAY-LIVE-001 is also processed during an automated test. The test confirms that
+            the payment is split between two invoices using deterministic logic, that the AI
+            function is never called, that two PaymentApplication records are created, and
+            that both invoices are marked as paid.
+          </p>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="subsection">
+        <p class="eyebrow">Automated test results</p>
+        <h3>Current result</h3>
+        <div class="test-output-image">
+          <img
+            src="images/ALLTESTSPASSED.png"
+            alt="Pytest output showing 43 tests passed successfully"
+          >
+        </div>
+        <div class="code-block">
+          <code>pytest -q</code>
+        </div>
+
+        <div class="prose-block">
+          <p>
+                  The automated test suite currently completes successfully with all
+                  43 tests passing. AI responses are mocked during testing so that
+                  workflow behaviour can be tested deterministically without relying
+                  on live Azure OpenAI calls.
+          </p>
+        </div>
+      </div>
+
+      <!-- MANUAL TESTING -->
+      <div class="subsection">
+        <p class="eyebrow">Manual testing</p>
+        <h3>Frontend smoke testing</h3>
+
+        <div class="prose-block">
+          <p>
+            The automated suite primarily validates backend behaviour, persistence and
+            agent-control logic. A short manual browser test is therefore also required
+            to verify the user interface.
+          </p>
+        </div>
+
+        <div class="card">
+          <ul class="clean-list">
+            <li>Navigate between all Operations Console pages.</li>
+            <li>Select cases from each human-review queue.</li>
+            <li>Approve or reject an Invoice QA review.</li>
+            <li>Enter and confirm a Cash Application allocation.</li>
+            <li>Select a Dunning action.</li>
+            <li>Search for invoices and payments in Case Overview.</li>
+            <li>Confirm that Agent Activity and timelines update after a live-agent run.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- LIMITATIONS -->
+      <div class="subsection">
+        <p class="eyebrow">Testing limitations</p>
+        <h3>Areas for further testing</h3>
+
+        <div class="prose-block">
+          <p>
+            Although the automated suite provides broad coverage of the prototype's core
+            behaviour, it does not measure the real-world accuracy of the language model.
+            Because AI responses are mocked during automated testing, a larger evaluation
+            dataset would be required to measure how consistently the live model classifies
+            genuine O2C exceptions.
+          </p>
+
+          <p>
+            Further work could also include automated frontend tests, performance testing
+            with larger case volumes, security testing, and repeated evaluation of agent
+            decisions against a labelled benchmark dataset.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         07 EVALUATION
+    ========================================================== -->
+    <section id="evaluation" class="report-section">
+      <div class="section-header">
+        <div class="section-number">07</div>
+        <div>
+          <p class="eyebrow">Evaluation</p>
+          <h2>How well did the design meet the project goals?</h2>
+          <p class="section-summary">
+            The final evaluation should compare the completed implementation against the
+            original requirements and discuss both technical quality and practical limitations.
+          </p>
+        </div>
+      </div>
+
+      <div class="subsection first-subsection">
+        <p class="eyebrow">Completed MoSCoW review</p>
+        <h3>Requirement outcome</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Requirement area</th>
+                <th>Priority</th>
+                <th>Current outcome</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Invoice QA workflow</td><td><span class="priority must">Must</span></td><td>Implemented</td></tr>
+              <tr><td>Cash Application workflow</td><td><span class="priority must">Must</span></td><td>Implemented</td></tr>
+              <tr><td>Dunning workflow</td><td><span class="priority must">Must</span></td><td>Implemented</td></tr>
+              <tr><td>Human review records</td><td><span class="priority must">Must</span></td><td>Implemented</td></tr>
+              <tr><td>Agent audit trail</td><td><span class="priority must">Must</span></td><td>Implemented</td></tr>
+              <tr><td>Review dashboard</td><td><span class="priority should">Should</span></td><td>Implemented / in current UI</td></tr>
+              <tr><td>Draft customer emails</td><td><span class="priority could">Could</span></td><td>Future work</td></tr>
+              <tr><td>Full O2C agent network</td><td><span class="priority wont">Won't</span></td><td>Outside current scope</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="eyebrow">Critical evaluation</p>
+        <div class="evaluation-grid">
+          <article class="card"><h3>User interface / UX</h3><p>The dashboard gives users one place to inspect review queues and reconstruct a case. The current interface is functional, but could be improved with stronger filtering, user roles and clearer prioritisation of urgent reviews.</p></article>
+          <article class="card"><h3>Functionality</h3><p>The three implemented agents demonstrate the hybrid workflow successfully, but they cover only part of the full O2C lifecycle originally considered.</p></article>
+          <article class="card"><h3>Stability</h3><p>Deterministic branches are predictable, while AI-dependent branches require validation and controlled fallbacks to avoid malformed or unsupported decisions.</p></article>
+          <article class="card"><h3>Efficiency</h3><p>Running deterministic checks before AI reduces unnecessary model calls and keeps simple cases fast and inexpensive.</p></article>
+          <article class="card"><h3>Compatibility</h3><p>The modular backend design makes it possible to replace the prototype database or connect future enterprise data sources without rewriting every agent.</p></article>
+          <article class="card"><h3>Maintainability</h3><p>Separating agents, database models, case evidence and review records makes the application easier to extend than a single monolithic decision workflow.</p></article>
+          <article class="card"><h3>Project management</h3><p>A narrower implementation scope helped prioritise complete end-to-end agent workflows over partially implementing every proposed O2C agent.</p></article>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="eyebrow">Strengths and weaknesses</p>
+        <div class="two-col">
+          <div class="card">
+            <h3>Strengths</h3>
+            <ul class="clean-list">
+              <li>Clear separation between deterministic checks and AI reasoning.</li>
+              <li>Human review remains available when evidence is insufficient.</li>
+              <li>Agent decisions can be logged and inspected.</li>
+              <li>Reusable evidence and review structures support multiple workflows.</li>
+              <li>The UI links operational data with agent activity.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Weaknesses</h3>
+            <ul class="clean-list">
+              <li>The prototype uses simulated/local enterprise data rather than live ERP integrations.</li>
+              <li>The implemented agent set is smaller than the wider original concept.</li>
+              <li>AI confidence values are not calibrated guarantees of correctness.</li>
+              <li>More unit tests and larger evaluation datasets are needed.</li>
+              <li>User authentication and separation of duties are not yet fully developed.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="future-card">
+        <div>
+          <p class="eyebrow">Future work</p>
+          <h3>How the project could be extended</h3>
+        </div>
+        <ul class="future-list">
+          <li>Add further agents for the remaining stages of the O2C lifecycle.</li>
+          <li>Evaluate stronger or more specialised AI models.</li>
+          <li>Add authentication, user roles and separation of duties.</li>
+          <li>Allow the Dunning Agent to prepare draft reminder emails for human approval.</li>
+          <li>Integrate real ERP, email, CRM or warehouse data sources.</li>
+          <li>Build a larger benchmark dataset for quantitative agent evaluation.</li>
+          <li>Add stronger monitoring, logging and configurable escalation rules.</li>
+        </ul>
+      </div>
+    </section>
+<!-- =========================================================
+     08 APPENDICES
+========================================================== -->
+<section id="appendices" class="report-section">
+  <div class="section-header">
+    <div class="section-number">08</div>
+    <div>
+      <p class="eyebrow">Appendices</p>
+      <h2>User guidance, deployment and legal considerations</h2>
+      <p class="section-summary">
+        These appendices provide practical information for someone who needs
+        to use, run or further develop the prototype.
+      </p>
+    </div>
+  </div>
+
+  <!-- APPENDIX A -->
+  <div class="subsection first-subsection">
+    <p class="eyebrow">Appendix A</p>
+    <h3>User Manual</h3>
+
+    <div class="prose-block">
+      <p>
+        Once the application has been deployed, finance or O2C users can access the
+        Operations Console in a web browser. The main navigation provides access to
+        Overview, Invoice QA, Cash Application, Dunning, Agent Activity and Case Overview.
+      </p>
+
+      <p>
+        The review pages contain cases that could not be completed automatically. Users can
+        inspect the relevant transaction data, contextual evidence, agent reasoning and
+        recommended next action before making the required human decision.
+      </p>
+
+      <p>
+        Case Overview can be used to search for an invoice, payment or purchase order and
+        reconstruct its wider O2C history, including related records, evidence, agent
+        decisions, review events and payment activity.
+      </p>
+    </div>
+  </div>
+
+  <!-- APPENDIX B -->
+  <div class="subsection">
+    <p class="eyebrow">Appendix B</p>
+    <h3>Deployment Manual</h3>
+
+    <div class="prose-block">
+      <p>
+        The application consists of a Python backend, a Vue/Vite frontend and a local
+        SQLite database. The following steps describe how to prepare and run the
+        prototype locally.
+      </p>
+    </div>
+
+    <div class="deployment-steps">
+      <div class="deployment-step">
+        <span class="deployment-number">1</span>
+        <div>
+          <h3>Obtain the source code</h3>
+          <p>
+            Clone or extract the project repository onto the target machine and open
+            the project folder.
+          </p>
+        </div>
+      </div>
+
+      <div class="deployment-step">
+        <span class="deployment-number">2</span>
+        <div>
+          <h3>Prepare the backend environment</h3>
+          <p>
+            Create and activate a Python virtual environment, then install the required
+            Python dependencies from the repository.
+          </p>
+          <p>
+            Configure the required Azure OpenAI settings, including the API endpoint,
+            key and deployment/model information used by the agents.
+          </p>
+        </div>
+      </div>
+
+      <div class="deployment-step">
+        <span class="deployment-number">3</span>
+        <div>
+          <h3>Initialise the demonstration database</h3>
+          <p>Create or restore the local SQLite demonstration database by running:</p>
+          <div class="code-block">
+            <code>python seed_data.py</code>
+          </div>
+          <p>
+            This loads the seeded Invoice QA, Cash Application and Dunning
+            demonstration cases.
+          </p>
+        </div>
+      </div>
+
+      <div class="deployment-step">
+        <span class="deployment-number">4</span>
+        <div>
+          <h3>Start the backend</h3>
+          <p>
+            Start the FastAPI backend using the command defined by the final
+            project configuration.
+          </p>
+        </div>
+      </div>
+
+      <div class="deployment-step">
+        <span class="deployment-number">5</span>
+        <div>
+          <h3>Start the frontend</h3>
+          <p>
+            Open a second terminal in the Vue/Vite frontend folder, install the
+            frontend dependencies if required, and start the development server.
+          </p>
+          <p>The Operations Console can then be opened at:</p>
+          <div class="code-block">
+            <code>http://localhost:5173</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="deployment-step">
+        <span class="deployment-number">6</span>
+        <div>
+          <h3>Verify the application</h3>
+          <p>
+            Confirm that the Operations Console loads correctly and that the Overview,
+            Invoice QA, Cash Application, Dunning, Agent Activity and Case Overview
+            pages can retrieve data from the backend.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <p class="eyebrow">Using the deployed system</p>
+      <h3>Running and reviewing agent decisions</h3>
+
+      <div class="prose-block">
+        <p>
+          Once the application is running, finance users can review existing
+          demonstration cases through the Operations Console. The review pages show
+          cases escalated by the Invoice QA, Cash Application and Dunning agents,
+          while Case Overview can be used to inspect a case's related evidence and
+          audit history.
+        </p>
+
+        <p>
+          Additional unprocessed demonstration records can also be passed through
+          an agent from the command line. For example:
+        </p>
+
+        <div class="code-block">
+          <code>python -m agents.cash_application PAY-LIVE-001</code>
+        </div>
+
+        <p>
+          After the command completes, refresh the web application and search for
+          the processed record in Case Overview. The resulting decision, payment
+          allocation and Agent Activity entry should then appear in the interface.
+        </p>
+      </div>
+    </div>
+
+    <div class="callout deployment-check">
+      <strong>Deployment check</strong>
+      <p>
+        A successful deployment should allow the user to open the Operations Console,
+        view seeded cases, run a live agent demonstration and inspect the resulting
+        decision through Case Overview and Agent Activity.
+      </p>
+    </div>
+  </div>
+
+  <!-- APPENDIX C -->
+  <div class="subsection">
+    <p class="eyebrow">Appendix C</p>
+    <h3>Legal issues and processes</h3>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>Data protection</h3>
+        <p>
+          O2C systems may process customer names, contact details, financial information
+          and communications. A production system would therefore need appropriate
+          access controls, data minimisation, retention policies and secure handling of
+          personal or commercially sensitive information.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>AI accountability</h3>
+        <p>
+          AI-generated recommendations should remain reviewable and auditable. Human
+          users should be able to understand what information informed a decision and
+          intervene where an automated outcome is inappropriate.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Financial controls</h3>
+        <p>
+          High-impact financial actions should respect approval thresholds, separation
+          of duties and existing organisational controls rather than allowing an AI agent
+          to bypass them.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Use of model outputs</h3>
+        <p>
+          Model-generated confidence and reasoning should be treated as supporting
+          information rather than a guarantee of correctness. Important decisions require
+          validation and clear escalation routes.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>
+    <strong>O2C Agents</strong>
+    <span>COMP0016 Project Report</span>
+  </div>
+  <a href="#home">Back to top ↑</a>
+</footer>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
