@@ -737,6 +737,441 @@
           </article>
         </div>
       </div>
+      <!-- =========================================================
+     SOURCE CODE IMPLEMENTATION
+========================================================== -->
+<div class="subsection">
+  <p class="eyebrow">Source code implementation</p>
+  <h3>How the application is structured</h3>
+
+  <div class="prose-block">
+    <p>
+      The implementation is divided into separate layers for the O2C domain model,
+      database access, workflow control, specialist agents, backend API and frontend.
+      This separation was used so that business data, AI reasoning and user interaction
+      are not combined into a single monolithic component.
+    </p>
+
+    <p>
+      The central design idea is that the database remains responsible for storing
+      the current business state, while the controller and agent modules determine
+      how that state should progress. The frontend does not communicate directly with
+      the agents or database; instead, it retrieves and updates information through
+      the FastAPI backend.
+    </p>
+  </div>
+
+  <!-- SOURCE FILE OVERVIEW -->
+  <div class="subsection">
+    <p class="eyebrow">Project structure</p>
+    <h3>Responsibilities of the main source files</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>File / directory</th>
+            <th>Responsibility</th>
+            <th>Interactions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td><code>models.py</code></td>
+            <td>
+              Defines the SQLAlchemy models representing the O2C process and
+              supporting agent records.
+            </td>
+            <td>
+              Used by the database, agents, controllers, API and seed script.
+            </td>
+          </tr>
+
+          <tr>
+            <td><code>db.py</code></td>
+            <td>
+              Creates the SQLite connection and SQLAlchemy sessions used to
+              access persistent O2C data.
+            </td>
+            <td>
+              Called by the agents and FastAPI endpoints whenever records need
+              to be retrieved or updated.
+            </td>
+          </tr>
+
+          <tr>
+            <td><code>o2c_protocols.py</code></td>
+            <td>
+              Defines the abstract interfaces for the O2C controller, company
+              operations and ledger.
+            </td>
+            <td>
+              Provides a shared contract for both the human baseline and
+              agent-assisted controller implementations.
+            </td>
+          </tr>
+
+          <tr>
+            <td><code>controller.py</code></td>
+            <td>
+              Contains <code>HumanController</code> and <code>AgentController</code>,
+              which coordinate the manual and agent-assisted versions of the workflow.
+            </td>
+            <td>
+              Connects O2C lifecycle events with either human processing or the
+              specialist agent modules.
+            </td>
+          </tr>
+
+          <tr>
+            <td><code>human.py</code></td>
+            <td>
+              Implements a simplified representation of the manual cognitive work
+              required in a traditional O2C workflow.
+            </td>
+            <td>
+              Used by <code>HumanController</code> as the baseline against which
+              agent-assisted processing can be compared.
+            </td>
+          </tr>
+
+          <tr>
+            <td><code>agents/</code></td>
+            <td>
+              Contains the Invoice QA, Cash Application and Dunning specialist
+              agents.
+            </td>
+            <td>
+              Reads O2C data through <code>db.py</code>, performs deterministic
+              checks, calls Azure OpenAI when required and persists the outcome.
+            </td>
+          </tr>
+
+          <tr>
+            <td><code>api.py</code></td>
+            <td>
+              Provides the FastAPI endpoints used by the Operations Console.
+            </td>
+            <td>
+              Retrieves database information for the frontend and processes human
+              review decisions submitted by users.
+            </td>
+          </tr>
+
+          <tr>
+            <td><code>frontend/src/App.vue</code></td>
+            <td>
+              Implements the Vue Operations Console and its review, audit and
+              case-overview screens.
+            </td>
+            <td>
+              Sends HTTP requests to <code>api.py</code> and renders the returned
+              O2C and review data.
+            </td>
+          </tr>
+
+          <tr>
+            <td><code>seed_data.py</code></td>
+            <td>
+              Creates the demonstration dataset used to exercise different
+              deterministic, AI and human-review paths.
+            </td>
+            <td>
+              Populates the SQLAlchemy models stored in the local SQLite database.
+            </td>
+          </tr>
+
+          <tr>
+            <td><code>tests/</code></td>
+            <td>
+              Contains automated tests for the baseline O2C flow, specialist
+              agents, controller behaviour and API workflows.
+            </td>
+            <td>
+              Uses controlled databases and mocked AI responses to validate the
+              implementation without depending on live model calls.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CONTROLLER DESIGN -->
+  <div class="subsection">
+    <p class="eyebrow">Controller design</p>
+    <h3>A common interface for manual and agent-assisted O2C</h3>
+
+    <div class="prose-block">
+      <p>
+        <code>O2CController</code> in <code>o2c_protocols.py</code> acts as the
+        common interface for the main events in the O2C lifecycle. It defines
+        callbacks for receiving a purchase order, sending goods, receiving a GRN,
+        sending an invoice, receiving payment and recording revenue, together with
+        exception-handling actions such as customer follow-up and escalation.
+      </p>
+
+      <p>
+        Keeping this interface separate from the implementation means that the same
+        high-level workflow can be controlled in different ways. The project uses
+        this to provide both a <code>HumanController</code> baseline and an
+        <code>AgentController</code> implementation.
+      </p>
+    </div>
+
+    <div class="two-col">
+      <article class="card">
+        <span class="card-label">Baseline</span>
+        <h3>HumanController</h3>
+        <p>
+          <code>HumanController</code> represents the traditional process in which
+          exceptions are resolved by a person. For example, after a GRN is received,
+          the controller asks the <code>Human</code> object to prepare an invoice and
+          manually compare the purchase order, GRN and invoice.
+        </p>
+
+        <p>
+          If the records match, the invoice can continue. If not, the human generates
+          follow-up actions for the customer or warehouse. This provides a simple
+          baseline representation of where manual cognitive work creates delays in
+          the conventional process.
+        </p>
+      </article>
+
+      <article class="card">
+        <span class="card-label">Agent-assisted implementation</span>
+        <h3>AgentController</h3>
+        <p>
+          <code>AgentController</code> keeps the same O2C event vocabulary but adds
+          dedicated methods for processing invoices, payments and dunning cases.
+          These methods call the appropriate specialist agent and interpret its
+          structured result.
+        </p>
+
+        <p>
+          The controller therefore acts as an orchestration boundary: the specialist
+          agent decides the outcome of its particular task, while the controller
+          determines whether the wider workflow can continue or whether a human
+          review is required.
+        </p>
+      </article>
+    </div>
+
+
+  <!-- AGENT INTERNAL STRUCTURE -->
+  <div class="subsection">
+    <p class="eyebrow">Specialist agent implementation</p>
+    <h3>A common processing pattern</h3>
+
+    <div class="prose-block">
+      <p>
+        Although the three agents solve different business problems, their source
+        files follow a similar structure. Each workflow first retrieves the required
+        records from the database and constructs a restricted case containing only
+        information relevant to the decision.
+      </p>
+    </div>
+
+    <div class="decision-flow">
+      <div>Load database records</div>
+      <span>→</span>
+      <div>Run deterministic checks</div>
+      <span>→</span>
+      <div>Call AI if required</div>
+      <span>→</span>
+      <div>Validate structured result</div>
+      <span>→</span>
+      <div>Persist outcome</div>
+    </div>
+
+    <div class="prose-block">
+      <p>
+        The agent is deliberately not given direct database access through the model.
+        Python first gathers the required structured records and contextual
+        <code>CaseEvidence</code>, formats them into a controlled prompt and sends
+        only that information to Azure OpenAI. This limits the model to the evidence
+        selected by the application.
+      </p>
+
+      <p>
+        The returned text is then parsed into a predefined structure. Invalid
+        decisions, confidence values or risk classifications are rejected rather
+        than being accepted as arbitrary model output. The Python workflow therefore
+        remains responsible for validating and applying the AI recommendation.
+      </p>
+    </div>
+  </div>
+
+
+
+  <!-- DATABASE / PERSISTENCE INTERACTION -->
+  <div class="subsection">
+    <p class="eyebrow">Persistence</p>
+    <h3>How agent decisions become application state</h3>
+
+    <div class="prose-block">
+      <p>
+        Each agent uses <code>get_session()</code> from <code>db.py</code> to obtain
+        a SQLAlchemy session. Input records are read from the transactional O2C tables,
+        while results are written back using the same model layer.
+      </p>
+
+      <p>
+        Importantly, the system does not store only the final business state.
+        <code>AgentAction</code> records preserve which agent acted, its decision,
+        reason, confidence and execution status. <code>HumanReviewCase</code> records
+        represent cases awaiting user intervention, while <code>CaseEvidence</code>
+        stores contextual information that can be included in future agent reasoning.
+      </p>
+
+      <p>
+        This allows the Operations Console to reconstruct both what happened to a
+        transaction and why it happened, rather than presenting only the final invoice
+        or payment status.
+      </p>
+    </div>
+  </div>
+
+  <!-- API AND FRONTEND -->
+  <div class="subsection">
+    <p class="eyebrow">Backend and frontend interaction</p>
+    <h3>From database state to the Operations Console</h3>
+
+    <div class="decision-flow">
+      <div>Vue Operations Console</div>
+      <span>↔</span>
+      <div>FastAPI endpoints</div>
+      <span>↔</span>
+      <div>SQLAlchemy models</div>
+      <span>↔</span>
+      <div>SQLite database</div>
+    </div>
+
+    <div class="prose-block">
+      <p>
+        <code>api.py</code> forms the boundary between the Vue frontend and the stored
+        O2C state. The frontend uses HTTP requests rather than querying the database
+        directly. For example, it requests the open review queue, retrieves detailed
+        evidence for a selected review, submits human decisions, loads the agent audit
+        trail and reconstructs related records for Case Overview.
+      </p>
+
+      <p>
+        <code>App.vue</code> maintains the state of the Operations Console and selects
+        the appropriate API endpoint depending on the active view. Selecting an Invoice
+        QA, Cash Application or Dunning review first loads the common review record and
+        then requests workflow-specific information from the backend.
+      </p>
+
+      <p>
+        When a finance user confirms a decision, the frontend sends the selected action
+        back to the review-resolution endpoint. FastAPI validates the request, modifies
+        the relevant O2C records through SQLAlchemy and commits the transaction. After
+        this, the frontend refreshes its review and activity data so that the new
+        database state is immediately reflected in the interface.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Frontend operation</th>
+            <th>Backend endpoint</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>Load review queues</td>
+            <td><code>GET /reviews</code></td>
+            <td>Retrieves open human-review cases.</td>
+          </tr>
+
+          <tr>
+            <td>Open Invoice QA review</td>
+            <td><code>GET /reviews/{id}/invoice-qa-details</code></td>
+            <td>Loads invoice, PO, GRN, line-item and evidence data.</td>
+          </tr>
+
+          <tr>
+            <td>Open Cash Application review</td>
+            <td><code>GET /reviews/{id}/cash-details</code></td>
+            <td>Loads the payment and candidate invoice balances.</td>
+          </tr>
+
+          <tr>
+            <td>Open Dunning review</td>
+            <td><code>GET /reviews/{id}/dunning-details</code></td>
+            <td>Loads overdue invoice, customer, history and evidence information.</td>
+          </tr>
+
+          <tr>
+            <td>Submit human decision</td>
+            <td><code>POST /reviews/{id}/resolve</code></td>
+            <td>Persists the reviewer action and updates the underlying workflow.</td>
+          </tr>
+
+          <tr>
+            <td>View agent history</td>
+            <td><code>GET /agent-actions</code></td>
+            <td>Returns the audit trail of specialist-agent decisions.</td>
+          </tr>
+
+          <tr>
+            <td>Search complete case</td>
+            <td><code>GET /cases/{entity_id}</code></td>
+            <td>Reconstructs related O2C records and their history.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- COMPLETE FLOW -->
+  <div class="subsection">
+    <p class="eyebrow">End-to-end interaction</p>
+    <h3>Example: an Invoice QA exception</h3>
+
+    <div class="prose-block">
+      <p>
+        An invoice entering Invoice QA is first loaded from SQLite together with its
+        purchase order, GRN, line items and evidence. The deterministic functions in
+        <code>invoice_qa.py</code> compare these records. If everything matches, the
+        result is persisted immediately and Azure OpenAI is not contacted.
+      </p>
+
+      <p>
+        If an exception exists, Python formats the relevant records and evidence and
+        sends them to the Invoice QA agent. The response is parsed and validated before
+        the result is written to the database. If human intervention is required, a
+        <code>HumanReviewCase</code> is created.
+      </p>
+
+      <p>
+        The Vue frontend later requests the open Invoice QA reviews from
+        <code>api.py</code>. When the reviewer opens the case, FastAPI reconstructs
+        the supporting PO, GRN, line-item and evidence information. The reviewer can
+        then approve or reject the invoice, and that decision is sent back through the
+        API and persisted to the database.
+      </p>
+    </div>
+
+    <div class="decision-flow">
+      <div>O2C record</div>
+      <span>→</span>
+      <div>Deterministic check</div>
+      <span>→</span>
+      <div>Specialist agent if needed</div>
+      <span>→</span>
+      <div>Database + audit record</div>
+      <span>→</span>
+      <div>Human review if required</div>
+    </div>
+  </div>
+
     </section>
 
     <!-- =========================================================
@@ -1129,62 +1564,308 @@
         </div>
       </div>
     </section>
+<!-- =========================================================
+     07 EVALUATION
+========================================================== -->
+<section id="evaluation" class="report-section">
 
-    <!-- =========================================================
-         07 EVALUATION
-    ========================================================== -->
-    <section id="evaluation" class="report-section">
-      <div class="section-header">
-        <div class="section-number">07</div>
-        <div>
-          <p class="eyebrow">Evaluation</p>
-          <h2>How well did the design meet the project goals?</h2>
-          <p class="section-summary">
-            The final evaluation should compare the completed implementation against the
-            original requirements and discuss both technical quality and practical limitations.
-          </p>
-        </div>
+  <div class="section-header">
+    <div class="section-number">07</div>
+    <div>
+      <p class="eyebrow">Evaluation</p>
+      <h2>Evaluation of Project</h2>
+      <p class="section-summary">
+        The final implementation was evaluated against the original requirements
+        and assessed across functionality, usability, stability, efficiency,
+        compatibility and maintainability.
+      </p>
+    </div>
+  </div>
+
+<!-- =========================================================
+     COMPLETED MOSCOW REVIEW
+========================================================== -->
+<div class="subsection first-subsection">
+  <p class="eyebrow">Completed MoSCoW review</p>
+  <h3>Requirements against the final implementation</h3>
+
+  <div class="prose-block">
+    <p>
+      The final implementation was compared against the functional and
+      non-functional requirements defined at the beginning of the project.
+      Most Must and Should requirements were achieved, while the Could and
+      Won't requirements remain outside the current prototype scope.
+    </p>
+  </div>
+
+  <h3 class="spacing-top">Functional requirements</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Priority</th>
+          <th>Requirement</th>
+          <th>Outcome</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>FR1</td>
+          <td><span class="priority must">Must</span></td>
+          <td>Validate invoices against purchase order and goods received information.</td>
+          <td><strong>Met</strong> — implemented through Invoice QA three-way matching.</td>
+        </tr>
+
+        <tr>
+          <td>FR2</td>
+          <td><span class="priority must">Must</span></td>
+          <td>Detect invoice discrepancies and analyse unresolved exceptions.</td>
+          <td><strong>Met</strong> — deterministic mismatches are detected and unresolved cases can be analysed by AI.</td>
+        </tr>
+
+        <tr>
+          <td>FR3</td>
+          <td><span class="priority must">Must</span></td>
+          <td>Match incoming bank remittances to outstanding invoices.</td>
+          <td><strong>Met</strong> — exact, split and ambiguous payment workflows are supported.</td>
+        </tr>
+
+        <tr>
+          <td>FR4</td>
+          <td><span class="priority must">Must</span></td>
+          <td>Identify overdue invoices and recommend an appropriate dunning action.</td>
+          <td><strong>Met</strong> — the Dunning Agent evaluates overdue cases and returns a collection action.</td>
+        </tr>
+
+        <tr>
+          <td>FR5</td>
+          <td><span class="priority must">Must</span></td>
+          <td>Escalate unresolved or unsuitable cases for human review.</td>
+          <td><strong>Met</strong> — all three workflows can create HumanReviewCase records.</td>
+        </tr>
+
+        <tr>
+          <td>FR6</td>
+          <td><span class="priority must">Must</span></td>
+          <td>Store agent decisions, reasoning, confidence and status for auditability.</td>
+          <td><strong>Met</strong> — AgentAction records preserve agent outcomes and supporting information.</td>
+        </tr>
+
+        <tr>
+          <td>FR7</td>
+          <td><span class="priority should">Should</span></td>
+          <td>Display review queues and reconstructed O2C cases in a user interface.</td>
+          <td><strong>Met</strong> — the Operations Console provides review queues, Agent Activity and Case Overview.</td>
+        </tr>
+
+        <tr>
+          <td>FR8</td>
+          <td><span class="priority should">Should</span></td>
+          <td>Store contextual evidence that can be used by agents during analysis.</td>
+          <td><strong>Met</strong> — CaseEvidence stores additional contextual information associated with O2C entities.</td>
+        </tr>
+
+        <tr>
+          <td>FR9</td>
+          <td><span class="priority could">Could</span></td>
+          <td>Generate draft customer communications for suitable collection actions.</td>
+          <td><strong>Not implemented</strong> — retained as future work for the Dunning Agent.</td>
+        </tr>
+
+        <tr>
+          <td>FR10</td>
+          <td><span class="priority wont">Won't</span></td>
+          <td>Fully automate all O2C stages without human oversight in the current prototype.</td>
+          <td><strong>Intentionally excluded</strong> — human review remains part of the system design.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="spacing-top">Non-functional requirements</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Priority</th>
+          <th>Requirement</th>
+          <th>Outcome</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>NFR1</td>
+          <td><span class="priority must">Must</span></td>
+          <td>Agent decisions should be explainable and traceable.</td>
+          <td><strong>Met</strong> — reasons, confidence and decision history are stored and displayed through Agent Activity and Case Overview.</td>
+        </tr>
+
+        <tr>
+          <td>NFR2</td>
+          <td><span class="priority must">Must</span></td>
+          <td>The system should avoid silently accepting malformed or unsupported AI outputs.</td>
+          <td><strong>Met</strong> — AI responses are parsed and validated before being applied to application state.</td>
+        </tr>
+
+        <tr>
+          <td>NFR3</td>
+          <td><span class="priority must">Must</span></td>
+          <td>The architecture should keep individual agents modular and maintainable.</td>
+          <td><strong>Met</strong> — Invoice QA, Cash Application and Dunning are implemented as separate specialist modules.</td>
+        </tr>
+
+        <tr>
+          <td>NFR4</td>
+          <td><span class="priority should">Should</span></td>
+          <td>The interface should make escalated cases easy to understand and review.</td>
+          <td><strong>Mostly met</strong> — relevant case data, evidence, recommendations and review controls are shown together, although prioritisation and filtering could be improved.</td>
+        </tr>
+
+        <tr>
+          <td>NFR5</td>
+          <td><span class="priority should">Should</span></td>
+          <td>Straightforward deterministic cases should avoid unnecessary LLM calls.</td>
+          <td><strong>Met</strong> — clean invoice and payment cases are resolved deterministically before AI is considered.</td>
+        </tr>
+
+        <tr>
+          <td>NFR6</td>
+          <td><span class="priority could">Could</span></td>
+          <td>The application could support role-based access and separation of duties.</td>
+          <td><strong>Not implemented</strong> — authentication and role-based access remain future work.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- =========================================================
+     CRITICAL EVALUATION
+========================================================== -->
+<div class="subsection">
+  <p class="eyebrow">Critical evaluation</p>
+  <h3>Self-assessment of the final prototype</h3>
+
+  <div class="prose-block">
+    <p>
+      The prototype was evaluated across seven areas using a score out of 10.
+      The scores reflect the quality of the current coursework implementation
+      rather than the standard expected from a production financial system.
+    </p>
+  </div>
+
+  <div class="evaluation-grid">
+
+    <article class="card evaluation-card">
+      <div class="evaluation-heading">
+        <h3>User interface / UX</h3>
+        <span class="evaluation-score">8/10</span>
       </div>
+      <p>
+        The Operations Console gives finance users a single place to inspect
+        review queues, agent activity and reconstructed cases. Relevant evidence
+        and actions are generally easy to locate. The score is reduced because
+        filtering, prioritisation and role-specific interfaces could be improved.
+      </p>
+    </article>
 
-      <div class="subsection first-subsection">
-        <p class="eyebrow">Completed MoSCoW review</p>
-        <h3>Requirement outcome</h3>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Requirement area</th>
-                <th>Priority</th>
-                <th>Current outcome</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>Invoice QA workflow</td><td><span class="priority must">Must</span></td><td>Implemented</td></tr>
-              <tr><td>Cash Application workflow</td><td><span class="priority must">Must</span></td><td>Implemented</td></tr>
-              <tr><td>Dunning workflow</td><td><span class="priority must">Must</span></td><td>Implemented</td></tr>
-              <tr><td>Human review records</td><td><span class="priority must">Must</span></td><td>Implemented</td></tr>
-              <tr><td>Agent audit trail</td><td><span class="priority must">Must</span></td><td>Implemented</td></tr>
-              <tr><td>Review dashboard</td><td><span class="priority should">Should</span></td><td>Implemented / in current UI</td></tr>
-              <tr><td>Draft customer emails</td><td><span class="priority could">Could</span></td><td>Future work</td></tr>
-              <tr><td>Full O2C agent network</td><td><span class="priority wont">Won't</span></td><td>Outside current scope</td></tr>
-            </tbody>
-          </table>
-        </div>
+    <article class="card evaluation-card">
+      <div class="evaluation-heading">
+        <h3>Functionality</h3>
+        <span class="evaluation-score">8/10</span>
       </div>
+      <p>
+        All core Must requirements were implemented across Invoice QA,
+        Cash Application and Dunning, including human review and audit logging.
+        However, the prototype only covers three specialist agents rather than
+        the complete O2C lifecycle originally considered.
+      </p>
+    </article>
 
-      <div class="subsection">
-        <p class="eyebrow">Critical evaluation</p>
-        <div class="evaluation-grid">
-          <article class="card"><h3>User interface / UX</h3><p>The dashboard gives users one place to inspect review queues and reconstruct a case. The current interface is functional, but could be improved with stronger filtering, user roles and clearer prioritisation of urgent reviews.</p></article>
-          <article class="card"><h3>Functionality</h3><p>The three implemented agents demonstrate the hybrid workflow successfully, but they cover only part of the full O2C lifecycle originally considered.</p></article>
-          <article class="card"><h3>Stability</h3><p>Deterministic branches are predictable, while AI-dependent branches require validation and controlled fallbacks to avoid malformed or unsupported decisions.</p></article>
-          <article class="card"><h3>Efficiency</h3><p>Running deterministic checks before AI reduces unnecessary model calls and keeps simple cases fast and inexpensive.</p></article>
-          <article class="card"><h3>Compatibility</h3><p>The modular backend design makes it possible to replace the prototype database or connect future enterprise data sources without rewriting every agent.</p></article>
-          <article class="card"><h3>Maintainability</h3><p>Separating agents, database models, case evidence and review records makes the application easier to extend than a single monolithic decision workflow.</p></article>
-          <article class="card"><h3>Project management</h3><p>A narrower implementation scope helped prioritise complete end-to-end agent workflows over partially implementing every proposed O2C agent.</p></article>
-        </div>
+    <article class="card evaluation-card">
+      <div class="evaluation-heading">
+        <h3>Stability</h3>
+        <span class="evaluation-score">8/10</span>
       </div>
+      <p>
+        Deterministic branches behave predictably and automated tests cover
+        success, failure and escalation paths. AI responses are also validated
+        before being applied. Stability could still be affected by live model
+        availability or unexpected real-world input.
+      </p>
+    </article>
 
+    <article class="card evaluation-card">
+      <div class="evaluation-heading">
+        <h3>Efficiency</h3>
+        <span class="evaluation-score">9/10</span>
+      </div>
+      <p>
+        Deterministic checks are performed before AI, meaning straightforward
+        cases avoid unnecessary model calls. This reduces latency and model usage
+        while reserving AI reasoning for cases where it provides additional value.
+      </p>
+    </article>
+
+    <article class="card evaluation-card">
+      <div class="evaluation-heading">
+        <h3>Compatibility</h3>
+        <span class="evaluation-score">7/10</span>
+      </div>
+      <p>
+        The backend, database and agents are separated cleanly, making future
+        integrations possible. However, the current prototype uses local SQLite
+        and demonstration data rather than being connected to real ERP, banking,
+        CRM or warehouse systems.
+      </p>
+    </article>
+
+    <article class="card evaluation-card">
+      <div class="evaluation-heading">
+        <h3>Maintainability</h3>
+        <span class="evaluation-score">8/10</span>
+      </div>
+      <p>
+        The system separates SQLAlchemy models, database access, controllers,
+        specialist agents, API endpoints and frontend logic. The common controller
+        abstraction and modular agent structure also make individual components
+        easier to extend or replace.
+      </p>
+    </article>
+
+    <article class="card evaluation-card">
+      <div class="evaluation-heading">
+        <h3>Project management</h3>
+        <span class="evaluation-score">8/10</span>
+      </div>
+      <p>
+        Narrowing the implementation to three high-value O2C bottlenecks allowed
+        complete end-to-end workflows to be developed rather than partially
+        implementing a much larger agent network. More time could have been
+        allocated to production integration and broader AI evaluation.
+      </p>
+    </article>
+
+  </div>
+
+  <div class="callout evaluation-overall">
+    <strong>Overall assessment: 8/10</strong>
+    <p>
+      The prototype successfully demonstrates the main project concept: combining
+      deterministic business rules, specialist AI agents and human review within
+      an auditable O2C workflow. Its main limitations come from prototype scope
+      rather than failure of the core design, particularly the use of simulated
+      data, lack of authentication and limited evaluation of live model accuracy.
+    </p>
+  </div>
+</div>
       <div class="subsection">
         <p class="eyebrow">Strengths and weaknesses</p>
         <div class="two-col">

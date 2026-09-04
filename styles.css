@@ -1249,3 +1249,34 @@ footer strong { color: var(--text); }
   height: auto;
   border-radius: 6px;
 }
+
+.evaluation-card {
+  position: relative;
+}
+
+.evaluation-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.evaluation-heading h3 {
+  margin: 0;
+}
+
+.evaluation-score {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f7f8fa;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.evaluation-overall {
+  margin-top: 26px;
+}
