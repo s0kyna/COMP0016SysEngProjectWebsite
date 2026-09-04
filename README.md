@@ -1,15 +1,15 @@
 # O2C PROJECT REPORT WEBSITE
 
-This version contains the full report structure requested:
+This version contains the full report structure
 
-01 Home / Introduction  
-02 Requirements + Use Cases  
-03 Research + Design Choices  
-04 UI Design  
-05 Proposed Design + Implementation  
-06 Testing Strategy  
-07 Evaluation  
-08 Appendices  
+1 - Home / Introduction  
+2 - Requirements + Use Cases  
+3 - Research + Design Choices  
+4 - UI Design  
+5 - Proposed Design + Implementation  
+6 - Testing Strategy  
+7 - Evaluation  
+8 - Appendices  
 
 ## HOW TO OPEN
 
